@@ -2,127 +2,109 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import './Navbar.css';
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 100);
+      setScrolled(window.scrollY > 20);
     };
-
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === '/';
+    return pathname.startsWith(path);
+  };
+
+  const navLinks = [
+    { href: '/', label: 'Home', icon: null },
+    { href: '/scanner', label: 'Scanner', icon: '🔍' },
+    { href: '/agents', label: 'AI Agents', icon: '🤖' },
+    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+  ];
+
   return (
-    <nav 
-      className="nav" 
-      id="nav"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        padding: scrolled ? '15px 60px' : '20px 60px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        zIndex: 100,
-        background: scrolled ? 'rgba(5, 5, 7, 0.9)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(99, 102, 241, 0.1)' : 'none',
-        transition: 'all 0.3s ease'
-      }}
-    >
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        fontFamily: 'var(--font-display)',
-        fontWeight: 600,
-        fontSize: '1.25rem'
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-          borderRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 0 20px var(--primary-glow)'
-        }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" style={{width: '22px', height: '22px'}}>
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
-        </div>
-        <span>Aptos Shield</span>
-      </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '40px'
-      }}>
-        <a href="#features" style={{
-          color: 'var(--text-secondary)',
-          textDecoration: 'none',
-          fontSize: '0.95rem',
-          transition: 'color 0.3s ease'
-        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Features</a>
-        <a href="#demo" style={{
-          color: 'var(--text-secondary)',
-          textDecoration: 'none',
-          fontSize: '0.95rem',
-          transition: 'color 0.3s ease'
-        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Demo</a>
-        <a href="#tech" style={{
-          color: 'var(--text-secondary)',
-          textDecoration: 'none',
-          fontSize: '0.95rem',
-          transition: 'color 0.3s ease'
-        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Technology</a>
-        <Link href="/scanner" style={{
-          color: 'var(--text-secondary)',
-          textDecoration: 'none',
-          fontSize: '0.95rem',
-          transition: 'color 0.3s ease'
-        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Scanner</Link>
-        <Link href="/agents" style={{
-          color: 'var(--text-secondary)',
-          textDecoration: 'none',
-          fontSize: '0.95rem',
-          transition: 'color 0.3s ease',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>
-          <span>🤖</span>
-          <span>AI Agents</span>
+    <nav className={`unified-navbar ${scrolled ? 'scrolled' : ''}`}>
+      <div className="navbar-container">
+        <Link href="/" className="navbar-logo">
+          <div className="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
+          <span className="logo-text">Aptos Shield</span>
         </Link>
-        <Link href="/dashboard" style={{
-          padding: '10px 24px',
-          background: 'var(--primary)',
-          color: 'white',
-          borderRadius: '8px',
-          fontWeight: 500,
-          textDecoration: 'none',
-          transition: 'all 0.3s ease'
-        }} onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'var(--secondary)';
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 20px var(--primary-glow)';
-        }} onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'var(--primary)';
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = 'none';
-        }}>Launch App</Link>
+
+        <div className="navbar-links">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`nav-link ${isActive(link.href) ? 'active' : ''}`}
+            >
+              {link.icon && <span className="nav-icon">{link.icon}</span>}
+              <span>{link.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="navbar-actions">
+          <a 
+            href="https://github.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="nav-github"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+          <Link href="/scanner" className="nav-cta">
+            Start Scanning
+          </Link>
+        </div>
+
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span className={`hamburger ${mobileMenuOpen ? 'open' : ''}`}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+      </div>
+
+      <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        {navLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`mobile-link ${isActive(link.href) ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            {link.icon && <span className="nav-icon">{link.icon}</span>}
+            <span>{link.label}</span>
+          </Link>
+        ))}
+        <Link 
+          href="/scanner" 
+          className="mobile-cta"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          Start Scanning
+        </Link>
       </div>
     </nav>
   );

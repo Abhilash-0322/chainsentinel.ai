@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Navbar } from '@/components/ui/Navbar';
 import './scanner.css';
 
 const API_BASE = typeof window !== 'undefined'
@@ -223,19 +224,8 @@ export default function ScannerPage() {
 
   return (
     <div className="scanner-page">
-      {/* Header */}
-      <header className="scanner-header">
-        <div className="scanner-header-content">
-          <Link href="/" className="logo">
-            <span className="logo-icon">🛡️</span>
-            <span className="logo-text">Aptos Compliance Agent</span>
-          </Link>
-          <nav className="scanner-nav">
-            <Link href="/dashboard" className="nav-link">Dashboard</Link>
-            <Link href="/scanner" className="nav-link active">Scanner</Link>
-          </nav>
-        </div>
-      </header>
+      {/* Unified Navigation */}
+      <Navbar />
 
       {/* Hero Section */}
       <section className="scanner-hero">

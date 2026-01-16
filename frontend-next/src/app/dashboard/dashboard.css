@@ -4,56 +4,16 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    padding-top: 72px; /* Account for fixed navbar */
 }
 
-.header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg-glass);
-    backdrop-filter: blur(20px);
+/* Connection Status Bar */
+.connection-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--spacing-sm) var(--spacing-xl);
+    background: rgba(10, 10, 15, 0.5);
     border-bottom: 1px solid var(--border-color);
-    padding: var(--spacing-md) var(--spacing-xl);
-}
-
-.header-content {
-    max-width: 1600px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-
-.logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-glow);
-}
-
-.logo-icon svg {
-    width: 22px;
-    height: 22px;
-    color: white;
-}
-
-.logo-text {
-    font-size: 1.25rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .connection-status {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Navbar } from '@/components/ui/Navbar';
 import './dashboard.css';
 
 const API_BASE = typeof window !== 'undefined'
@@ -205,24 +206,16 @@ export default function DashboardPage() {
 
   return (
     <div className="app-container">
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <Link href="/" className="logo">
-            <div className="logo-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-            </div>
-            <span className="logo-text">Aptos Compliance Agent</span>
-          </Link>
-          <div className="connection-status">
-            <span className={`status-dot ${connected ? 'connected' : 'disconnected'}`}></span>
-            <span className="status-text">{connected ? 'Connected' : 'Disconnected'}</span>
-          </div>
+      {/* Unified Navigation */}
+      <Navbar />
+      
+      {/* Connection Status Bar */}
+      <div className="connection-bar">
+        <div className="connection-status">
+          <span className={`status-dot ${connected ? 'connected' : 'disconnected'}`}></span>
+          <span className="status-text">{connected ? 'Connected to Aptos Network' : 'Disconnected'}</span>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="main-content">
