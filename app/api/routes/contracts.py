@@ -621,6 +621,8 @@ async def upload_and_analyze_contract(
         file_content = await file.read()
         
         # ALWAYS use on-demand.io Media API for file processing (hackathon requirement)
+        file_url = ""  # Will store the on-demand.io file URL
+        
         async with httpx.AsyncClient(timeout=30.0) as client:
             print(f"📤 Processing file '{file.filename}' using on-demand.io Media API...")
             
@@ -641,6 +643,19 @@ async def upload_and_analyze_contract(
                     result = response.json()
                     print(f"✓ File processed successfully by on-demand.io API")
                     print(f"📊 API Response keys: {list(result.keys())}")
+                    
+                    # Try to extract file URL from response (if available)
+                    if 'url' in result:
+                        file_url = result['url']
+                        print(f"💾 File saved on on-demand.io: {file_url}")
+                    elif 'file_url' in result:
+                        file_url = result['file_url']
+                        print(f"💾 File saved on on-demand.io: {file_url}")
+                    elif 'data' in result and isinstance(result['data'], dict) and 'url' in result['data']:
+                        file_url = result['data']['url']
+                        print(f"💾 File saved on on-demand.io: {file_url}")
+                    else:
+                        print("ℹ No file URL returned by on-demand.io API")
                     
                     # Extract text content from the on-demand.io response
                     # Try various possible response fields
@@ -845,17 +860,21 @@ async def upload_and_analyze_contract(
                 filename=file.filename or "unknown",
                 language=language,
                 code=code,
-                file_url="",  # Could store in S3/cloud storage later
+                file_url=file_url or "",  # Store on-demand.io file URL
                 analysis_result=analysis_result
             )
+            print(f"💾 Contract saved to MongoDB with upload_id: {upload_id}")
+            if file_url:
+                print(f"🔗 on-demand.io file URL stored: {file_url}")
         except Exception as db_error:
-            print(f"MongoDB save failed: {db_error}")
+            print(f"❌ MongoDB save failed: {db_error}")
             # Continue without saving to DB
         
         return {
             "upload_id": upload_id,
             "filename": file.filename,
             "code": code,
+            "file_url": file_url,  # Include on-demand.io URL in response
             "analysis": analysis_result
         }
         

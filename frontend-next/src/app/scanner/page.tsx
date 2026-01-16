@@ -57,6 +57,7 @@ export default function ScannerPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const codeEditorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -168,6 +169,7 @@ export default function ScannerPage() {
     setAnalysisResult(null);
     setShowResults(false);
     setUploadedFile(null);
+    setUploadedFileUrl('');
     codeEditorRef.current?.focus();
   };
 
@@ -201,6 +203,12 @@ export default function ScannerPage() {
       
       // Set the code in the editor
       setCode(result.code);
+      
+      // Store on-demand.io file URL if available
+      if (result.file_url) {
+        setUploadedFileUrl(result.file_url);
+        console.log('File saved on on-demand.io:', result.file_url);
+      }
       
       // Set analysis results
       setAnalysisResult(result.analysis);
@@ -382,11 +390,17 @@ export default function ScannerPage() {
                           </svg>
                           <h3>File Uploaded Successfully</h3>
                           <p className="uploaded-filename">{uploadedFile.name}</p>
+                          {uploadedFileUrl && (
+                            <p className="file-url-info">
+                              📁 Stored on on-demand.io
+                            </p>
+                          )}
                           <button
                             type="button"
                             className="upload-another-btn"
                             onClick={() => {
                               setUploadedFile(null);
+                              setUploadedFileUrl('');
                               setCode('');
                               setShowResults(false);
                             }}

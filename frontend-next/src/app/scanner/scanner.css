@@ -1317,6 +1317,16 @@
   border-radius: 8px;
 }
 
+.file-url-info {
+  font-size: 0.85rem !important;
+  color: var(--text-secondary) !important;
+  margin: 8px 0 0 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 .supported-formats {
   display: block;
   font-size: 0.85rem;
