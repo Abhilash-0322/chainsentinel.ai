@@ -622,69 +622,72 @@ async def upload_and_analyze_contract(
         
         # ALWAYS use on-demand.io Media API for file processing (hackathon requirement)
         async with httpx.AsyncClient(timeout=30.0) as client:
-            # Upload file to on-demand.io Media API
-            files_data = {
-                'file': (file.filename, file_content, file.content_type or 'application/octet-stream')
-            }
-            headers = {
-                'apikey': settings.ondemand_api_key
-            }
-            
             print(f"📤 Processing file '{file.filename}' using on-demand.io Media API...")
             
             try:
+                # Prepare multipart form data for on-demand.io API
+                files = {'file': (file.filename, file_content, file.content_type or 'text/plain')}
+                
                 # Call the fetchmedia endpoint to process the file
                 response = await client.post(
                     f"{settings.ondemand_api_url}/api/fetchmedia",
-                    files=files_data,
-                    headers=headers
+                    files=files,
+                    headers={'apikey': settings.ondemand_api_key}
                 )
                 
                 print(f"📡 on-demand.io API Response Status: {response.status_code}")
                 
-                if response.status_code != 200:
-                    print(f"❌ on-demand.io API Error: {response.text}")
-                    # Fallback to direct decode for text files
-                    try:
-                        code = file_content.decode('utf-8')
-                        print("⚠ Using direct UTF-8 decode as fallback")
-                    except:
-                        raise HTTPException(
-                            status_code=500,
-                            detail=f"On-demand.io API returned {response.status_code}. Could not process file."
-                        )
-                else:
+                if response.status_code == 200:
                     result = response.json()
                     print(f"✓ File processed successfully by on-demand.io API")
                     print(f"📊 API Response keys: {list(result.keys())}")
                     
                     # Extract text content from the on-demand.io response
+                    # Try various possible response fields
                     if 'text' in result:
                         code = result['text']
+                        print(f"✓ Extracted {len(code)} characters from 'text' field")
                     elif 'content' in result:
                         code = result['content']
-                    elif 'data' in result and isinstance(result['data'], str):
-                        code = result['data']
+                        print(f"✓ Extracted {len(code)} characters from 'content' field")
+                    elif 'data' in result:
+                        if isinstance(result['data'], str):
+                            code = result['data']
+                            print(f"✓ Extracted {len(code)} characters from 'data' field")
+                        elif isinstance(result['data'], dict) and 'text' in result['data']:
+                            code = result['data']['text']
+                            print(f"✓ Extracted {len(code)} characters from 'data.text' field")
+                        else:
+                            raise ValueError("Unexpected data structure")
                     else:
-                        # Fallback: try to decode directly if API doesn't return expected format
-                        try:
-                            code = file_content.decode('utf-8')
-                            print("⚠ Using direct UTF-8 decode as fallback (unexpected API response format)")
-                        except:
-                            raise HTTPException(
-                                status_code=500,
-                                detail=f"Could not extract text from file. API response format: {list(result.keys())}"
-                            )
+                        raise ValueError(f"No text field found in response. Available: {list(result.keys())}")
+                        
+                elif response.status_code == 405:
+                    print(f"⚠ on-demand.io API returned 405 (Method Not Allowed)")
+                    print(f"   This may indicate the endpoint is not configured or the API key needs verification")
+                    print(f"   Falling back to direct text extraction...")
+                    code = file_content.decode('utf-8')
+                    
+                else:
+                    print(f"❌ on-demand.io API Error ({response.status_code}): {response.text[:200]}")
+                    code = file_content.decode('utf-8')
+                    print("⚠ Using direct UTF-8 decode as fallback")
+                    
             except httpx.RequestError as e:
                 print(f"❌ on-demand.io API Request Error: {str(e)}")
-                # Fallback to direct decode
+                code = file_content.decode('utf-8')
+                print("⚠ Using direct UTF-8 decode due to API request error")
+                
+            except (ValueError, KeyError, UnicodeDecodeError) as e:
+                print(f"❌ Processing Error: {str(e)}")
+                # Last resort: try direct decode
                 try:
                     code = file_content.decode('utf-8')
-                    print("⚠ Using direct UTF-8 decode due to API request error")
-                except:
+                    print("⚠ Using direct UTF-8 decode as final fallback")
+                except Exception as final_error:
                     raise HTTPException(
                         status_code=500,
-                        detail=f"on-demand.io API request failed: {str(e)}"
+                        detail=f"Could not process file: {str(final_error)}"
                     )
         
         # Analyze the extracted code
