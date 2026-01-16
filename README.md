@@ -14,6 +14,7 @@ Security and compliance rules are expressed as human-readable policies, allowing
   - Pattern-based vulnerability detection with 15+ security checks
   - Full contract display with animated scanning visualization
   - Manual code input and demo vulnerable contracts
+  - **File Upload**: Upload smart contract files for analysis with on-demand.io Media API
 
 - 📊 **Real-Time Transaction Dashboard**
   - Live transaction monitoring for Aptos addresses
@@ -22,13 +23,23 @@ Security and compliance rules are expressed as human-readable policies, allowing
   - WebSocket-based real-time alerts and updates
   - Transaction hash display and verification
 
+- 🤖 **6 Specialized AI Agents** (Powered by on-demand.io)
+  - **🛡️ Security Advisor**: Vulnerability analysis and remediation
+  - **✅ Compliance Checker**: Regulatory standards verification
+  - **⚡ Code Optimizer**: Performance improvement suggestions
+  - **📚 Vulnerability Explainer**: Educational security explanations
+  - **💰 Gas Optimizer**: Cost reduction strategies
+  - **📝 Audit Generator**: Comprehensive audit reports
+  - Interactive chat interface with session management
+  - Context-aware assistance with code analysis integration
+
 - 🤖 **AI-Powered Risk Assessment**
   - Automated risk scoring (0-100 scale)
   - Severity classification (Critical/High/Medium/Low)
   - Anomaly detection with pattern recognition
   - Vulnerability impact analysis with recommendations
   - Policy engine for compliance validation
-  - Agentic Se
+  - Agentic Security Analysis
 
 
 ## 🎯 Quick Start
@@ -91,6 +102,13 @@ npm install
 | POST | `/api/compliance/validate` | Validate transaction compliance |
 | GET | `/api/compliance/policies` | List available policies |
 
+### AI Agents
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/agents/list` | List all available AI agents |
+| POST | `/api/agents/chat` | Chat with specific agent |
+| POST | `/api/agents/analyze-with-agents` | Multi-agent analysis |
+
 ### Real-Time Updates
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -122,18 +140,44 @@ Frontend will run at `http://localhost:3000`
 - **Landing Page**: http://localhost:3000
 - **Smart Contract Scanner**: http://localhost:3000/scanner
 - **Transaction Dashboard**: http://localhost:3000/dashboard
+- **🤖 AI Agents**: http://localhost:3000/agents
 - **API Documentation**: http://localhost:8000/docs
-- *🛠️ Tech Stack
+
+## 🤖 AI Agents Feature
+
+### Overview
+6 specialized AI agents powered by on-demand.io Chat & Agent Tools API provide comprehensive smart contract assistance:
+
+1. **Security Advisor** - Analyzes vulnerabilities and provides remediation
+2. **Compliance Checker** - Verifies regulatory compliance
+3. **Code Optimizer** - Suggests performance improvements
+4. **Vulnerability Explainer** - Educational security explanations
+5. **Gas Optimizer** - Cost reduction strategies
+6. **Audit Generator** - Comprehensive audit reports
+
+### Usage
+- Navigate to `/agents` page
+- Click on any agent card to start a conversation
+- Ask questions about smart contracts, security, compliance
+- Get expert AI assistance with context from your analyses
+
+For detailed documentation, see [AI_AGENTS_INTEGRATION.md](AI_AGENTS_INTEGRATION.md)
+
+## 🛠️ Tech Stack
 
 ### Backend
 - **Framework**: FastAPI (Python 3.9+)
+- **Database**: MongoDB (Motor async driver)
 - **Blockchain SDKs**: 
   - Aptos Python SDK
   - Web3.py (Ethereum)
   - Solana.py (Solana)
-- **AI/ML**: OpenAI GPT-4 (optional)
+- **AI/ML**: 
+  - Groq API (llama-3.3-70b-versatile)
+  - on-demand.io Chat & Agent Tools API
 - **Real-time**: WebSockets
 - **API Docs**: Swagger/OpenAPI
+- **File Processing**: on-demand.io Media API
 
 ### Frontend
 - **Framework**: Next.js 15 (App Router)
@@ -143,6 +187,11 @@ Frontend will run at `http://localhost:3000`
 - **Styling**: CSS Modules, Custom CSS
 - **State Management**: React Hooks
 - **HTTP Client**: Fetch API
+
+### Third-Party Integrations
+- **on-demand.io**: AI agents and media processing
+- **Groq**: LLM-powered vulnerability detection
+- **MongoDB**: Contract storage and analytics
 
 ### Blockchain Support
 - **Aptos**: Move language analysis

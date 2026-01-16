@@ -41,14 +41,14 @@ class Settings(BaseSettings):
         description="MongoDB database name"
     )
     
-    # On-Demand.io Media API
+    # On-Demand.io AI Agents API
     ondemand_api_key: str = Field(
         default="XBKmaTtF167mfnJaEQte41YZbw6zj08S",
-        description="On-Demand.io API key for file processing"
+        description="On-Demand.io API key for AI agents"
     )
     ondemand_api_url: str = Field(
-        default="https://app.on-demand.io",
-        description="On-Demand.io API base URL"
+        default="https://api.on-demand.io/chat/v1",
+        description="On-Demand.io Chat API base URL"
     )
     
     # Server

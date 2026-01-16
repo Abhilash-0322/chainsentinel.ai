@@ -93,6 +93,19 @@ export function Navbar() {
           transition: 'color 0.3s ease'
         }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Scanner</Link>
+        <Link href="/agents" style={{
+          color: 'var(--text-secondary)',
+          textDecoration: 'none',
+          fontSize: '0.95rem',
+          transition: 'color 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+           onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>
+          <span>🤖</span>
+          <span>AI Agents</span>
+        </Link>
         <Link href="/dashboard" style={{
           padding: '10px 24px',
           background: 'var(--primary)',

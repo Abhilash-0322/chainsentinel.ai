@@ -638,6 +638,18 @@ export default function ScannerPage() {
                     <p>The contract appears to follow security best practices.</p>
                   </div>
                 )}
+
+                {/* Ask AI Agents Button */}
+                <div className="ai-agents-cta">
+                  <Link href="/agents" className="ai-agents-button">
+                    <span className="ai-icon">🤖</span>
+                    <div className="ai-button-content">
+                      <span className="ai-button-title">Ask AI Agents</span>
+                      <span className="ai-button-subtitle">Get detailed insights from 6 specialized AI agents</span>
+                    </div>
+                    <span className="ai-button-arrow">→</span>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="no-results">

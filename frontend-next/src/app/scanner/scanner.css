@@ -921,6 +921,69 @@
   font-size: 1rem;
 }
 
+/* AI Agents CTA */
+.ai-agents-cta {
+  margin-top: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 12px;
+}
+
+.ai-agents-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 10px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.ai-agents-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+  border-color: rgba(96, 165, 250, 0.6);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.3) 100%);
+}
+
+.ai-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.ai-button-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-button-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.ai-button-subtitle {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.ai-button-arrow {
+  font-size: 1.5rem;
+  color: #60a5fa;
+  transition: transform 0.3s ease;
+}
+
+.ai-agents-button:hover .ai-button-arrow {
+  transform: translateX(4px);
+}
+
 /* No Results State */
 .no-results {
   display: flex;
