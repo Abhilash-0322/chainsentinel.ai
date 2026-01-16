@@ -15,6 +15,7 @@ from app.config import get_settings
 from app.api.routes import contracts, transactions, compliance, demo
 from app.api.websocket import websocket_endpoint
 from app.core.transaction_monitor import get_transaction_monitor
+from app.core.database import connect_to_mongodb, close_mongodb_connection
 from app.models.schemas import HealthResponse
 
 
@@ -28,6 +29,9 @@ async def lifespan(app: FastAPI):
     print(f"🤖 AI Analysis: {'Enabled (Groq)' if settings.groq_api_key else 'Disabled (no API key)'}")
     print(f"🎯 Demo contracts available at /api/demo/contracts")
     
+    # Connect to MongoDB
+    await connect_to_mongodb()
+    
     # Start transaction monitor
     monitor = get_transaction_monitor()
     await monitor.start()
@@ -37,6 +41,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     await monitor.stop()
+    await close_mongodb_connection()
     print("👋 Shutting down...")
 
 

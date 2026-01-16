@@ -1,6 +1,5 @@
 """
 Configuration settings for the AI Compliance Agent.
-Loads from environment variables with sensible defaults.
 """
 
 import os
@@ -30,6 +29,26 @@ class Settings(BaseSettings):
     groq_model: str = Field(
         default="llama-3.3-70b-versatile",
         description="Groq model to use (llama-3.3-70b-versatile, mixtral-8x7b-32768, etc.)"
+    )
+    
+    # MongoDB
+    mongodb_url: str = Field(
+        default="mongodb://localhost:27017",
+        description="MongoDB connection URL"
+    )
+    mongodb_db_name: str = Field(
+        default="aptos_compliance",
+        description="MongoDB database name"
+    )
+    
+    # On-Demand.io Media API
+    ondemand_api_key: str = Field(
+        default="XBKmaTtF167mfnJaEQte41YZbw6zj08S",
+        description="On-Demand.io API key for file processing"
+    )
+    ondemand_api_url: str = Field(
+        default="https://app.on-demand.io",
+        description="On-Demand.io API base URL"
     )
     
     # Server

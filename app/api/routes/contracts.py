@@ -4,10 +4,12 @@ Contract Analysis API Routes
 Endpoints for analyzing smart contracts deployed on Aptos.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from datetime import datetime
 import os
 from pathlib import Path
+import httpx
+import uuid
 
 from app.models.schemas import (
     ContractAnalyzeRequest,
@@ -574,3 +576,280 @@ async def analyze_contract_code(request: dict):
         "ai_findings": ai_findings,
         "summary": f"Found {len(vulnerabilities)} vulnerabilities: {severity_counts['critical']} critical, {severity_counts['high']} high, {severity_counts['medium']} medium, {severity_counts['low']} low"
     }
+
+
+@router.post("/upload-and-analyze")
+async def upload_and_analyze_contract(
+    file: UploadFile = File(...),
+    language: str = Form(...)
+):
+    """
+    Upload a smart contract file, extract its content using on-demand.io API,
+    analyze it for vulnerabilities, and store it in MongoDB.
+    
+    Supports: .move, .sol, .rs files
+    """
+    from app.core.database import save_uploaded_contract, get_database
+    
+    settings = get_settings()
+    upload_id = str(uuid.uuid4())
+    
+    # Validate file type
+    allowed_extensions = {'.move', '.sol', '.rs', '.txt'}
+    file_extension = Path(file.filename or '').suffix.lower()
+    
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type. Allowed: {', '.join(allowed_extensions)}"
+        )
+    
+    # Validate language
+    if language not in ['move', 'solidity', 'rust']:
+        raise HTTPException(status_code=400, detail="Invalid language. Must be: move, solidity, or rust")
+    
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        # First, try to extract text directly (for text-based files)
+        try:
+            code = file_content.decode('utf-8')
+        except UnicodeDecodeError:
+            # If direct decode fails, use on-demand.io API for extraction
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                # Upload file to on-demand.io
+                files_data = {
+                    'file': (file.filename, file_content, file.content_type or 'application/octet-stream')
+                }
+                headers = {
+                    'apikey': settings.ondemand_api_key
+                }
+                
+                # Call the fetchmedia endpoint to process the file
+                response = await client.post(
+                    f"{settings.ondemand_api_url}/api/fetchmedia",
+                    files=files_data,
+                    headers=headers
+                )
+                
+                if response.status_code != 200:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"File processing failed: {response.text}"
+                    )
+                
+                result = response.json()
+                
+                # Extract text content from the response
+                if 'text' in result:
+                    code = result['text']
+                elif 'content' in result:
+                    code = result['content']
+                else:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Could not extract text from file"
+                    )
+        
+        # Analyze the extracted code
+        vulnerabilities = []
+        
+        # Use the same pattern-based analysis from analyze-code endpoint
+        if language == "move":
+            patterns = [
+                {
+                    "pattern": "public entry fun",
+                    "check": lambda line: "public entry fun" in line and "signer" not in line.split("public entry fun")[1].split(")")[0] if ")" in line.split("public entry fun")[1] else False,
+                    "vuln": {
+                        "type": "missing_authorization",
+                        "severity": "CRITICAL",
+                        "title": "Entry Function Without Signer Parameter",
+                        "description": "Public entry function lacks signer parameter for authorization",
+                        "recommendation": "Add a signer parameter to verify caller identity"
+                    }
+                },
+                {
+                    "pattern": "has copy",
+                    "check": lambda line: "Capability" in line and "has copy" in line,
+                    "vuln": {
+                        "type": "capability_copy",
+                        "severity": "HIGH",
+                        "title": "Capability with Copy Ability",
+                        "description": "Capability struct has 'copy' ability, allowing unauthorized duplication",
+                        "recommendation": "Remove 'copy' ability from capability structs"
+                    }
+                },
+                {
+                    "pattern": "borrow_global_mut",
+                    "check": lambda line: "borrow_global_mut" in line,
+                    "vuln": {
+                        "type": "unsafe_mutation",
+                        "severity": "MEDIUM",
+                        "title": "Global State Mutation",
+                        "description": "Function mutates global state - ensure proper access controls",
+                        "recommendation": "Verify authorization before mutating global state"
+                    }
+                }
+            ]
+        elif language == "solidity":
+            patterns = [
+                {
+                    "pattern": "tx.origin",
+                    "check": lambda line: "tx.origin" in line and "//" not in line[:line.index("tx.origin")] if "tx.origin" in line else False,
+                    "vuln": {
+                        "type": "tx_origin_usage",
+                        "severity": "CRITICAL",
+                        "title": "Use of tx.origin for Authorization",
+                        "description": "Using tx.origin for authorization is vulnerable to phishing attacks",
+                        "recommendation": "Use msg.sender instead of tx.origin for authorization checks"
+                    }
+                },
+                {
+                    "pattern": "selfdestruct",
+                    "check": lambda line: "selfdestruct" in line or "suicide" in line,
+                    "vuln": {
+                        "type": "selfdestruct",
+                        "severity": "HIGH",
+                        "title": "Selfdestruct Usage",
+                        "description": "Contract contains selfdestruct which can destroy the contract",
+                        "recommendation": "Ensure selfdestruct is properly protected and necessary"
+                    }
+                },
+                {
+                    "pattern": "delegatecall",
+                    "check": lambda line: "delegatecall" in line,
+                    "vuln": {
+                        "type": "delegatecall",
+                        "severity": "HIGH",
+                        "title": "Delegatecall to Untrusted Contract",
+                        "description": "Delegatecall can be dangerous if called on untrusted contracts",
+                        "recommendation": "Ensure delegatecall target is trusted and validated"
+                    }
+                }
+            ]
+        else:  # rust
+            patterns = [
+                {
+                    "pattern": "unwrap()",
+                    "check": lambda line: ".unwrap()" in line and not line.strip().startswith("//"),
+                    "vuln": {
+                        "type": "unsafe_unwrap",
+                        "severity": "MEDIUM",
+                        "title": "Use of unwrap() without Error Handling",
+                        "description": "unwrap() will panic if value is None/Err, causing program crash",
+                        "recommendation": "Use proper error handling with ? operator or match statements"
+                    }
+                },
+                {
+                    "pattern": "unsafe",
+                    "check": lambda line: "unsafe" in line and "{" in line,
+                    "vuln": {
+                        "type": "unsafe_block",
+                        "severity": "HIGH",
+                        "title": "Unsafe Code Block",
+                        "description": "Unsafe blocks bypass Rust's safety guarantees",
+                        "recommendation": "Minimize unsafe code and thoroughly audit for memory safety"
+                    }
+                }
+            ]
+        
+        # Analyze code with patterns
+        lines = code.split('\n')
+        for line_num, line in enumerate(lines, 1):
+            for pattern_info in patterns:
+                try:
+                    if pattern_info["pattern"] in line and pattern_info["check"](line):
+                        vuln = pattern_info["vuln"].copy()
+                        vuln["location"] = f"Line {line_num}"
+                        vuln["confidence"] = 0.85
+                        vuln["code_snippet"] = line.strip()
+                        vulnerabilities.append(vuln)
+                except:
+                    continue
+        
+        # Calculate severity counts and risk score
+        severity_counts = {
+            "critical": sum(1 for v in vulnerabilities if v["severity"] == "CRITICAL"),
+            "high": sum(1 for v in vulnerabilities if v["severity"] == "HIGH"),
+            "medium": sum(1 for v in vulnerabilities if v["severity"] == "MEDIUM"),
+            "low": sum(1 for v in vulnerabilities if v["severity"] == "LOW")
+        }
+        
+        risk_score = min(100, (
+            severity_counts["critical"] * 25 +
+            severity_counts["high"] * 15 +
+            severity_counts["medium"] * 8 +
+            severity_counts["low"] * 3
+        ))
+        
+        risk_level = "CRITICAL" if risk_score >= 80 else "HIGH" if risk_score >= 60 else "MEDIUM" if risk_score >= 30 else "LOW"
+        
+        analysis_result = {
+            "analysis_id": f"upload_{upload_id}",
+            "timestamp": datetime.now().isoformat(),
+            "language": language,
+            "vulnerabilities": vulnerabilities,
+            "severity_counts": severity_counts,
+            "risk_score": {
+                "score": risk_score,
+                "level": risk_level,
+                "description": f"Risk score: {risk_score}/100"
+            },
+            "summary": f"Found {len(vulnerabilities)} vulnerabilities: {severity_counts['critical']} critical, {severity_counts['high']} high, {severity_counts['medium']} medium, {severity_counts['low']} low"
+        }
+        
+        # Save to MongoDB
+        try:
+            db = get_database()
+            await save_uploaded_contract(
+                upload_id=upload_id,
+                filename=file.filename or "unknown",
+                language=language,
+                code=code,
+                file_url="",  # Could store in S3/cloud storage later
+                analysis_result=analysis_result
+            )
+        except Exception as db_error:
+            print(f"MongoDB save failed: {db_error}")
+            # Continue without saving to DB
+        
+        return {
+            "upload_id": upload_id,
+            "filename": file.filename,
+            "code": code,
+            "analysis": analysis_result
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload and analysis failed: {str(e)}")
+
+
+@router.get("/uploads/recent")
+async def get_recent_uploads(limit: int = 20):
+    """Get recently uploaded contracts from MongoDB."""
+    from app.core.database import get_recent_uploads
+    
+    try:
+        uploads = await get_recent_uploads(limit=limit)
+        return {"uploads": uploads}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch uploads: {str(e)}")
+
+
+@router.get("/uploads/{upload_id}")
+async def get_upload_by_id(upload_id: str):
+    """Get a specific uploaded contract by ID."""
+    from app.core.database import get_uploaded_contract
+    
+    try:
+        upload = await get_uploaded_contract(upload_id)
+        if not upload:
+            raise HTTPException(status_code=404, detail="Upload not found")
+        return upload
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch upload: {str(e)}")
