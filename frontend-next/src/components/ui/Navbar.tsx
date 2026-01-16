@@ -28,6 +28,7 @@ export function Navbar() {
     { href: '/', label: 'Home', icon: null },
     { href: '/scanner', label: 'Scanner', icon: '🔍' },
     { href: '/agents', label: 'AI Agents', icon: '🤖' },
+    { href: '/workflows', label: 'Workflows', icon: '⚡' },
     { href: '/dashboard', label: 'Dashboard', icon: '📊' },
   ];
 
@@ -109,3 +110,4 @@ export function Navbar() {
     </nav>
   );
 }
+export default Navbar;
