@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/ui/Navbar';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './dashboard.css';
 
 const API_BASE = typeof window !== 'undefined'
@@ -93,7 +94,10 @@ export default function DashboardPage() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [demoModal, setDemoModal] = useState<{open: boolean, data: any}>({open: false, data: null});
   const [viewModal, setViewModal] = useState<{open: boolean, type: 'transaction' | 'alert' | null, data: any}>({open: false, type: null, data: null});
+  const [activityData, setActivityData] = useState<Array<{time: string, transactions: number}>>([]);
+  const [currentIntervalCount, setCurrentIntervalCount] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
+  const activityIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Copy to clipboard helper
   const copyToClipboard = (text: string) => {
@@ -115,7 +119,36 @@ export default function DashboardPage() {
     setAlerts([]);
     setTransactions([]);
     setAnalysisResult(null);
+    setActivityData([]);
+    setCurrentIntervalCount(0);
   };
+
+  // Transaction activity tracking - tick every 2 seconds
+  useEffect(() => {
+    activityIntervalRef.current = setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      setCurrentIntervalCount(count => {
+        console.log(`[Chart Tick] Time: ${timeStr}, Transactions: ${count}`);
+        
+        // Add data point with current count
+        setActivityData(prev => {
+          const newData = [...prev, { time: timeStr, transactions: count }];
+          return newData.slice(-60); // Keep last 60 points (2 minutes)
+        });
+        
+        // Reset counter for next interval
+        return 0;
+      });
+    }, 2000);
+
+    return () => {
+      if (activityIntervalRef.current) {
+        clearInterval(activityIntervalRef.current);
+      }
+    };
+  }, []);
 
   // WebSocket connection
   useEffect(() => {
@@ -167,6 +200,11 @@ export default function DashboardPage() {
           safe: message.success ? prev.safe + 1 : prev.safe
         }));
         setTransactions(prev => [message, ...prev].slice(0, 20));
+        setCurrentIntervalCount(prev => {
+          const newCount = prev + 1;
+          console.log(`[Transaction Received] Counter: ${newCount}, Hash: ${message.hash?.substring(0, 10)}...`);
+          return newCount;
+        });
         break;
       case 'ping':
         if (wsRef.current) wsRef.current.send(JSON.stringify({ type: 'pong' }));
@@ -344,6 +382,71 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Transaction Activity Chart */}
+        <section className="activity-chart-panel">
+          <div className="panel-header">
+            <div>
+              <h2>Transaction Activity</h2>
+              <span className="activity-subtitle">Real-time transactions per 2 seconds • Last 2 minutes</span>
+            </div>
+            <div className="activity-stats">
+              <span className="activity-stat">
+                <span className="stat-label-small">Current Chain:</span>
+                <span className="stat-value-small" style={{color: CHAIN_CONFIGS[selectedChain].color}}>
+                  {CHAIN_CONFIGS[selectedChain].name}
+                </span>
+              </span>
+            </div>
+          </div>
+          <div className="chart-container">
+            {activityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}
+                  />
+                  <YAxis 
+                    stroke="rgba(255, 255, 255, 0.5)"
+                    tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}
+                    allowDecimals={false}
+                    domain={[0, 'auto']}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      background: 'rgba(20, 20, 35, 0.95)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      borderRadius: '8px',
+                      color: 'white'
+                    }}
+                    labelStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
+                    cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+                  />
+                  <Bar 
+                    dataKey="transactions" 
+                    fill={CHAIN_CONFIGS[selectedChain].color}
+                    radius={[4, 4, 0, 0]}
+                    opacity={0.8}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                height: '200px',
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontSize: '14px'
+              }}>
+                Waiting for transactions...
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Main Grid */}
         <div className="main-grid">
