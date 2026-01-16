@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     
     # On-Demand.io AI Agents API
     ondemand_api_key: str = Field(
-        default="XBKmaTtF167mfnJaEQte41YZbw6zj08S",
+        default="",
         description="On-Demand.io API key for AI agents"
     )
     ondemand_api_url: str = Field(
@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     host: str = Field(default="0.0.0.0")
     port: int = Field(default=8000)
     debug: bool = Field(default=True)
+    cors_origins: str = Field(
+        default="http://localhost:3000,https://aptoscomply.vercel.app",
+        description="Allowed CORS origins (comma-separated)"
+    )
     
     # Compliance Thresholds
     max_transaction_value: int = Field(

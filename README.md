@@ -304,6 +304,46 @@ For issues, questions, or contributions:
 
 ---
 
+## 🚀 Deployment
+
+The application is production-ready with deployment configurations for:
+
+- **Backend**: Render (recommended) or Azure
+- **Frontend**: Vercel
+
+### Quick Deploy
+
+```bash
+# Run deployment guide
+./deploy.sh
+```
+
+### Backend (Render)
+
+1. Push code to GitHub
+2. Go to [render.com](https://render.com) → New → Blueprint
+3. Connect repository (render.yaml auto-detected)
+4. Set environment variables:
+   ```
+   ONDEMAND_API_KEY=XBKmaTtF167mfnJaEQte41YZbw6zj08S
+   GROQ_API_KEY=your_groq_key (optional)
+   CORS_ORIGINS=https://your-app.vercel.app
+   ```
+
+### Frontend (Vercel)
+
+1. Go to [vercel.com](https://vercel.com) → New Project
+2. Import repository, set root: `frontend-next`
+3. Set environment variable:
+   ```
+   NEXT_PUBLIC_API_URL=https://aptoscomply-backend.onrender.com
+   ```
+4. Deploy!
+
+**📚 Full Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions
+
+---
+
 **Built with ❤️ for secure multi-chain dApp development** core/                # Blockchain integration
 ├── ai/                  # AI analysis engine
 └── models/              # Data models
