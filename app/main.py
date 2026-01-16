@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 import os
 
 from app.config import get_settings
-from app.api.routes import contracts, transactions, compliance, demo, agents, workflows
+from app.api.routes import contracts, transactions, compliance, demo, agents, workflows, prices
 from app.api.websocket import websocket_endpoint
 from app.core.transaction_monitor import get_transaction_monitor
 from app.core.database import connect_to_mongodb, close_mongodb_connection
@@ -69,6 +69,7 @@ app.include_router(compliance.router, prefix="/api")
 app.include_router(demo.router, prefix="/api")
 app.include_router(agents.router, prefix="/api")
 app.include_router(workflows.router)
+app.include_router(prices.router, prefix="/api")
 
 
 # WebSocket endpoint
