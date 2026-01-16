@@ -1,6 +1,8 @@
 # AI Compliance Agent for Multi-Chain dApps
 
-An AI-powered compliance and security agent that scans and validates smart contracts across multiple blockchains (Aptos, Ethereum, Solana), detecting vulnerabilities and policy violations in real-time with advanced pattern matching and risk assessment.
+An AI-powered compliance and security agent that scans and validates smart contracts across multiple blockchains, including Ethereum, Solana, and Aptos. The system performs real-time analysis to detect security vulnerabilities, policy violations, and anomalous contract behavior using advanced pattern matching and risk assessment techniques.
+
+Security and compliance rules are expressed as human-readable policies, allowing the agent to reason across multiple analysis tools and on-chain signals. For every detected issue, the agent provides a clear explanation of the risk, the underlying reasoning, and actionable recommendations to enable immediate mitigation and informed decision-making in production environments.
 
 ## 🚀 Features
 
@@ -26,13 +28,8 @@ An AI-powered compliance and security agent that scans and validates smart contr
   - Anomaly detection with pattern recognition
   - Vulnerability impact analysis with recommendations
   - Policy engine for compliance validation
+  - Agentic Se
 
-- 🎨 **Modern UI/UX**
-  - Next.js 15 frontend with TypeScript
-  - Animated 3D effects and particle fields
-  - Responsive design with gradient themes
-  - Interactive code preview with syntax display
-  - Language selector for blockchain-specific analysis
 
 ## 🎯 Quick Start
 
@@ -71,54 +68,6 @@ cd frontend-next
 
 # Install Node dependencies
 npm install
-
-# B📁 Project Structure
-
-```
-aptoscomplyagent/
-├── app/
-│   ├── main.py                      # FastAPI application entry point
-│   ├── config.py                    # Configuration and environment settings
-│   ├── api/
-│   │   ├── websocket.py            # WebSocket real-time connections
-│   │   └── routes/
-│   │       ├── compliance.py        # Compliance checking endpoints
-│   │       ├── contracts.py         # Contract analysis (multi-language)
-│   │       ├── transactions.py      # Transaction monitoring
-│   │       └── demo.py              # Demo contract examples
-│   ├── core/
-│   │   ├── aptos_client.py         # Aptos blockchain integration
-│   │   ├── contract_parser.py      # Move contract parsing
-│   │   └── transaction_monitor.py  # Real-time transaction tracking
-│   ├── ai/
-│   │   ├── policy_engine.py        # Compliance policy validation
-│   │   ├── risk_scorer.py          # Risk assessment algorithms
-│   │   ├── anomaly.py              # Anomaly detection
-│   │   └── vulnerability.py        # Vulnerability pattern matching
-│   └── models/
-│       └── schemas.py               # Pydantic data models
-│
-├── frontend-next/                   # Next.js 15 frontend
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── page.tsx            # Landing page
-│   │   │   ├── scanner/            # Smart contract scanner page
-│   │   │   │   ├── page.tsx        # Scanner UI component
-│   │   │   │   └── scanner.css     # Scanner-specific styles
-│   │   │   ├── dashboard/          # Transaction dashboard
-│   │   │   │   └── page.tsx        # Dashboard UI component
-│   │   │   └── demo/               # Demo page
-│   │   ├── components/
-│   │   │   ├── 3d/                 # Three.js 3D components
-│   │   │   ├── dashboard/          # Dashboard widgets
-│   │   │   ├── landing/            # Landing page sections
-│   │   │   └── ui/                 # Shared UI components
-│   │   └── lib/
-│   │       ├── api.ts              # API client utilities
-│   │       └── utils.ts            # Helper functions
-│   ├── package.json
-│   └── next.config.ts
-│🔌 API Endpoints
 
 ### Contract Analysis
 | Method | Endpoint | Description |
