@@ -584,10 +584,18 @@ async def upload_and_analyze_contract(
     language: str = Form(...)
 ):
     """
-    Upload a smart contract file, extract its content using on-demand.io API,
-    analyze it for vulnerabilities, and store it in MongoDB.
+    Upload a smart contract file and analyze it for vulnerabilities.
     
-    Supports: .move, .sol, .rs files
+    **Uses on-demand.io Media API for file processing** (Hackathon Track Requirement)
+    
+    Process:
+    1. Receives uploaded file (.move, .sol, .rs)
+    2. Sends file to on-demand.io Media API for text extraction
+    3. Analyzes extracted code for vulnerabilities using pattern matching
+    4. Stores contract and analysis results in MongoDB
+    5. Returns extracted code and vulnerability report
+    
+    Supports: Move, Solidity (Ethereum), and Rust (Solana) contracts
     """
     from app.core.database import save_uploaded_contract, get_database
     
@@ -612,20 +620,19 @@ async def upload_and_analyze_contract(
         # Read file content
         file_content = await file.read()
         
-        # First, try to extract text directly (for text-based files)
-        try:
-            code = file_content.decode('utf-8')
-        except UnicodeDecodeError:
-            # If direct decode fails, use on-demand.io API for extraction
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                # Upload file to on-demand.io
-                files_data = {
-                    'file': (file.filename, file_content, file.content_type or 'application/octet-stream')
-                }
-                headers = {
-                    'apikey': settings.ondemand_api_key
-                }
-                
+        # ALWAYS use on-demand.io Media API for file processing (hackathon requirement)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            # Upload file to on-demand.io Media API
+            files_data = {
+                'file': (file.filename, file_content, file.content_type or 'application/octet-stream')
+            }
+            headers = {
+                'apikey': settings.ondemand_api_key
+            }
+            
+            print(f"📤 Processing file '{file.filename}' using on-demand.io Media API...")
+            
+            try:
                 # Call the fetchmedia endpoint to process the file
                 response = await client.post(
                     f"{settings.ondemand_api_url}/api/fetchmedia",
@@ -633,23 +640,51 @@ async def upload_and_analyze_contract(
                     headers=headers
                 )
                 
+                print(f"📡 on-demand.io API Response Status: {response.status_code}")
+                
                 if response.status_code != 200:
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"File processing failed: {response.text}"
-                    )
-                
-                result = response.json()
-                
-                # Extract text content from the response
-                if 'text' in result:
-                    code = result['text']
-                elif 'content' in result:
-                    code = result['content']
+                    print(f"❌ on-demand.io API Error: {response.text}")
+                    # Fallback to direct decode for text files
+                    try:
+                        code = file_content.decode('utf-8')
+                        print("⚠ Using direct UTF-8 decode as fallback")
+                    except:
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"On-demand.io API returned {response.status_code}. Could not process file."
+                        )
                 else:
+                    result = response.json()
+                    print(f"✓ File processed successfully by on-demand.io API")
+                    print(f"📊 API Response keys: {list(result.keys())}")
+                    
+                    # Extract text content from the on-demand.io response
+                    if 'text' in result:
+                        code = result['text']
+                    elif 'content' in result:
+                        code = result['content']
+                    elif 'data' in result and isinstance(result['data'], str):
+                        code = result['data']
+                    else:
+                        # Fallback: try to decode directly if API doesn't return expected format
+                        try:
+                            code = file_content.decode('utf-8')
+                            print("⚠ Using direct UTF-8 decode as fallback (unexpected API response format)")
+                        except:
+                            raise HTTPException(
+                                status_code=500,
+                                detail=f"Could not extract text from file. API response format: {list(result.keys())}"
+                            )
+            except httpx.RequestError as e:
+                print(f"❌ on-demand.io API Request Error: {str(e)}")
+                # Fallback to direct decode
+                try:
+                    code = file_content.decode('utf-8')
+                    print("⚠ Using direct UTF-8 decode due to API request error")
+                except:
                     raise HTTPException(
                         status_code=500,
-                        detail="Could not extract text from file"
+                        detail=f"on-demand.io API request failed: {str(e)}"
                     )
         
         # Analyze the extracted code
