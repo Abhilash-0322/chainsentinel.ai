@@ -41,8 +41,47 @@ interface Policy {
   enabled: boolean;
 }
 
+type ChainType = 'aptos' | 'ethereum' | 'solana';
+
+interface ChainConfig {
+  id: ChainType;
+  name: string;
+  network: string;
+  icon: string;
+  explorerUrl: (hash: string) => string;
+  color: string;
+}
+
+const CHAIN_CONFIGS: Record<ChainType, ChainConfig> = {
+  aptos: {
+    id: 'aptos',
+    name: 'Aptos',
+    network: 'Testnet',
+    icon: '⬥',
+    explorerUrl: (hash) => `https://explorer.aptoslabs.com/txn/${hash}?network=testnet`,
+    color: '#00D4AA'
+  },
+  ethereum: {
+    id: 'ethereum',
+    name: 'Ethereum',
+    network: 'Sepolia',
+    icon: '◆',
+    explorerUrl: (hash) => `https://sepolia.etherscan.io/tx/${hash}`,
+    color: '#627EEA'
+  },
+  solana: {
+    id: 'solana',
+    name: 'Solana',
+    network: 'Devnet',
+    icon: '◉',
+    explorerUrl: (hash) => `https://explorer.solana.com/tx/${hash}?cluster=devnet`,
+    color: '#14F195'
+  }
+};
+
 export default function DashboardPage() {
   const [connected, setConnected] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<ChainType>('aptos');
   const [stats, setStats] = useState<Stats>({ safe: 0, warnings: 0, alerts: 0, total: 0 });
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -63,9 +102,19 @@ export default function DashboardPage() {
     }).catch(err => console.error('Copy failed:', err));
   };
 
-  // Get explorer URL
+  // Get explorer URL based on selected chain
   const getExplorerUrl = (hash: string) => {
-    return `https://explorer.aptoslabs.com/txn/${hash}?network=${networkName}`;
+    return CHAIN_CONFIGS[selectedChain].explorerUrl(hash);
+  };
+
+  // Handle chain change
+  const handleChainChange = (chain: ChainType) => {
+    setSelectedChain(chain);
+    // Reset stats and data when changing chains
+    setStats({ safe: 0, warnings: 0, alerts: 0, total: 0 });
+    setAlerts([]);
+    setTransactions([]);
+    setAnalysisResult(null);
   };
 
   // WebSocket connection
@@ -209,11 +258,35 @@ export default function DashboardPage() {
       {/* Unified Navigation */}
       <Navbar />
       
-      {/* Connection Status Bar */}
+      {/* Connection Status Bar with Chain Selector */}
       <div className="connection-bar">
+        <div className="chain-selector-wrapper">
+          <span className="selector-label">Monitoring:</span>
+          <div className="chain-selector">
+            {(Object.keys(CHAIN_CONFIGS) as ChainType[]).map((chain) => {
+              const config = CHAIN_CONFIGS[chain];
+              return (
+                <button
+                  key={chain}
+                  className={`chain-btn ${selectedChain === chain ? 'active' : ''}`}
+                  onClick={() => handleChainChange(chain)}
+                  style={{ '--chain-color': config.color } as React.CSSProperties}
+                >
+                  <span className="chain-icon">{config.icon}</span>
+                  <span className="chain-info">
+                    <span className="chain-name">{config.name}</span>
+                    <span className="chain-network">{config.network}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="connection-status">
           <span className={`status-dot ${connected ? 'connected' : 'disconnected'}`}></span>
-          <span className="status-text">{connected ? 'Connected to Aptos Network' : 'Disconnected'}</span>
+          <span className="status-text">
+            {connected ? `Connected to ${CHAIN_CONFIGS[selectedChain].name} ${CHAIN_CONFIGS[selectedChain].network}` : 'Disconnected'}
+          </span>
         </div>
       </div>
 
