@@ -1,6 +1,4 @@
-const API_BASE = typeof window !== 'undefined' && window.location.origin !== 'http://localhost:3000' 
-  ? window.location.origin 
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface Vulnerability {
     type: string;
