@@ -6,7 +6,7 @@ import Link from 'next/link';
 import './agents.css';
 
 const API_BASE = typeof window !== 'undefined'
-  ? (window.location.port === '3000' ? 'http://localhost:8000' : '')
+  ? (window.location.port === '3000' ? 'http://localhost:8000' : (process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com'))
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
 
 interface Agent {

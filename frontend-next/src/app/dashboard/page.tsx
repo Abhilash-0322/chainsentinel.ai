@@ -7,10 +7,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import './dashboard.css';
 
 const API_BASE = typeof window !== 'undefined'
-  ? (window.location.port === '3000' ? 'http://localhost:8000' : '')
+  ? (window.location.port === '3000' ? 'http://localhost:8000' : (process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com'))
   : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
 const WS_URL = typeof window !== 'undefined' 
-  ? (window.location.port === '3000' ? 'ws://localhost:8000/ws' : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`)
+  ? (window.location.port === '3000' ? 'ws://localhost:8000/ws' : 'wss://chainsentinel-ai.onrender.com/ws')
   : '';
 
 interface Stats {
