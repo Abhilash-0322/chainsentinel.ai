@@ -29,5 +29,5 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://frontend-next-7tqs6oq4v-abhilash-maruyas-projects.vercel.app,https://frontend-next-wine-two.vercel.app,https://aptoscomply.vercel.app,http://localhost:3000
+        value: https://chainsentinel-fohdkm7jx-abhilash-maruyas-projects.vercel.app,https://chainsentinel.vercel.app,http://localhost:3000
     healthCheckPath: /api/health

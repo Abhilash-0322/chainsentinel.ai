@@ -102,7 +102,7 @@ async def root():
         "version": "0.1.0",
         "docs": "/docs",
         "health": "/api/health",
-        "frontend": "https://frontend-next-7tqs6oq4v-abhilash-maruyas-projects.vercel.app"
+        "frontend": "https://chainsentinel-fohdkm7jx-abhilash-maruyas-projects.vercel.app"
     }
 
 
