@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import './workflows.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com';
 
 // Workflow definitions - Built in On-Demand.io platform
 const WORKFLOWS = [
@@ -138,7 +138,7 @@ export default function WorkflowsPage() {
   return (
     <div className="workflows-page">
       <Navbar />
-      
+
       {/* Background Effects */}
       <div className="workflows-bg">
         <div className="gradient-orb orb-1" style={{ background: selectedWorkflow.gradient }}></div>
@@ -203,8 +203,8 @@ export default function WorkflowsPage() {
               <h3>Workflow Pipeline</h3>
               <div className="steps-container">
                 {selectedWorkflow.steps.map((step, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className={`workflow-step ${currentStep === index ? 'active' : ''} ${currentStep > index ? 'completed' : ''}`}
                   >
                     <div className="step-indicator">
@@ -239,16 +239,16 @@ export default function WorkflowsPage() {
             <h3>🚀 Workflow Actions</h3>
             <span className="input-subtitle">Choose to activate or execute the pre-configured workflow</span>
           </div>
-          
+
           <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-            <button 
+            <button
               className="execute-btn"
               onClick={activateWorkflow}
               disabled={loading}
-              style={{ 
+              style={{
                 flex: 1,
                 minWidth: '200px',
-                background: loading && actionType === 'activate' ? undefined : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                background: loading && actionType === 'activate' ? undefined : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
               }}
             >
               {loading && actionType === 'activate' ? (
@@ -264,14 +264,14 @@ export default function WorkflowsPage() {
               )}
             </button>
 
-            <button 
+            <button
               className="execute-btn"
               onClick={executeWorkflow}
               disabled={loading}
-              style={{ 
+              style={{
                 flex: 1,
                 minWidth: '200px',
-                background: loading && actionType === 'execute' ? undefined : selectedWorkflow.gradient 
+                background: loading && actionType === 'execute' ? undefined : selectedWorkflow.gradient
               }}
             >
               {loading && actionType === 'execute' ? (
@@ -287,7 +287,7 @@ export default function WorkflowsPage() {
               )}
             </button>
           </div>
-          
+
           <div className="workflow-info-box">
             <span className="info-icon">ℹ️</span>
             <div className="info-text">

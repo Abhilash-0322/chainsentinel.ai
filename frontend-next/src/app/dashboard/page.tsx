@@ -6,12 +6,8 @@ import { Navbar } from '@/components/ui/Navbar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './dashboard.css';
 
-const API_BASE = typeof window !== 'undefined'
-  ? (window.location.port === '3000' ? 'http://localhost:8000' : (process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com'))
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
-const WS_URL = typeof window !== 'undefined' 
-  ? (window.location.port === '3000' ? 'ws://localhost:8000/ws' : 'wss://chainsentinel-ai.onrender.com/ws')
-  : '';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://chainsentinel-ai.onrender.com/ws';
 
 interface Stats {
   safe: number;
@@ -23,7 +19,7 @@ interface Stats {
 interface Alert {
   risk_level: string;
   risk_score: number;
-  violations: Array<{message: string}>;
+  violations: Array<{ message: string }>;
   transaction_hash: string;
   timestamp: string;
   sender: string;
@@ -92,9 +88,9 @@ export default function DashboardPage() {
   const [includeAI, setIncludeAI] = useState(true);
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
-  const [demoModal, setDemoModal] = useState<{open: boolean, data: any}>({open: false, data: null});
-  const [viewModal, setViewModal] = useState<{open: boolean, type: 'transaction' | 'alert' | null, data: any}>({open: false, type: null, data: null});
-  const [activityData, setActivityData] = useState<Array<{time: string, transactions: number}>>([]);
+  const [demoModal, setDemoModal] = useState<{ open: boolean, data: any }>({ open: false, data: null });
+  const [viewModal, setViewModal] = useState<{ open: boolean, type: 'transaction' | 'alert' | null, data: any }>({ open: false, type: null, data: null });
+  const [activityData, setActivityData] = useState<Array<{ time: string, transactions: number }>>([]);
   const [currentIntervalCount, setCurrentIntervalCount] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const activityIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,16 +124,16 @@ export default function DashboardPage() {
     activityIntervalRef.current = setInterval(() => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      
+
       setCurrentIntervalCount(count => {
         console.log(`[Chart Tick] Time: ${timeStr}, Transactions: ${count}`);
-        
+
         // Add data point with current count
         setActivityData(prev => {
           const newData = [...prev, { time: timeStr, transactions: count }];
           return newData.slice(-60); // Keep last 60 points (2 minutes)
         });
-        
+
         // Reset counter for next interval
         return 0;
       });
@@ -220,7 +216,7 @@ export default function DashboardPage() {
           fetch(`${API_BASE}/api/compliance/policies`),
           fetch(`${API_BASE}/api/health`)
         ]);
-        
+
         if (policiesRes.ok) {
           setPolicies(await policiesRes.json());
         }
@@ -273,7 +269,7 @@ export default function DashboardPage() {
       const response = await fetch(`${API_BASE}/api/demo/contracts/${contractName}/analyze`);
       if (!response.ok) throw new Error('Failed');
       const results = await response.json();
-      setDemoModal({open: true, data: results});
+      setDemoModal({ open: true, data: results });
     } catch (error) {
       alert('Failed to analyze demo contract');
     }
@@ -295,7 +291,7 @@ export default function DashboardPage() {
     <div className="app-container">
       {/* Unified Navigation */}
       <Navbar />
-      
+
       {/* Connection Status Bar with Chain Selector */}
       <div className="connection-bar">
         <div className="chain-selector-wrapper">
@@ -393,7 +389,7 @@ export default function DashboardPage() {
             <div className="activity-stats">
               <span className="activity-stat">
                 <span className="stat-label-small">Current Chain:</span>
-                <span className="stat-value-small" style={{color: CHAIN_CONFIGS[selectedChain].color}}>
+                <span className="stat-value-small" style={{ color: CHAIN_CONFIGS[selectedChain].color }}>
                   {CHAIN_CONFIGS[selectedChain].name}
                 </span>
               </span>
@@ -404,18 +400,18 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(99, 102, 241, 0.1)" />
-                  <XAxis 
-                    dataKey="time" 
+                  <XAxis
+                    dataKey="time"
                     stroke="rgba(255, 255, 255, 0.5)"
                     tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="rgba(255, 255, 255, 0.5)"
                     tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 11 }}
                     allowDecimals={false}
                     domain={[0, 'auto']}
                   />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{
                       background: 'rgba(20, 20, 35, 0.95)',
                       border: '1px solid rgba(99, 102, 241, 0.3)',
@@ -425,8 +421,8 @@ export default function DashboardPage() {
                     labelStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
                     cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
                   />
-                  <Bar 
-                    dataKey="transactions" 
+                  <Bar
+                    dataKey="transactions"
                     fill={CHAIN_CONFIGS[selectedChain].color}
                     radius={[4, 4, 0, 0]}
                     opacity={0.8}
@@ -434,10 +430,10 @@ export default function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 height: '200px',
                 color: 'rgba(255, 255, 255, 0.5)',
                 fontSize: '14px'
@@ -492,9 +488,9 @@ export default function DashboardPage() {
                   {analysisResult.error ? (
                     <div className="error-message">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="8" x2="12" y2="12"/>
-                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
                       </svg>
                       <div>
                         <strong>Error:</strong> {analysisResult.message}
@@ -520,75 +516,75 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="risk-score-display">
-                    <div className="risk-circle">
-                      <svg viewBox="0 0 100 100">
-                        <circle className="risk-bg" cx="50" cy="50" r="45" />
-                        <circle
-                          className={`risk-progress ${analysisResult.risk_score.level}`}
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          style={{
-                            strokeDashoffset: 283 - (analysisResult.risk_score.score / 100) * 283
-                          }}
-                        />
-                      </svg>
-                      <div className="risk-value">
-                        <span>{analysisResult.risk_score.score}</span>
-                        <span className="risk-label">Risk Score</span>
-                      </div>
-                    </div>
-                    <div className={`risk-level ${analysisResult.risk_score.level}`}>
-                      {analysisResult.risk_score.level.toUpperCase()}
-                    </div>
-                  </div>
-
-                  {/* Compliance Results */}
-                  {analysisResult.compliance && (
-                    <>
-                      <div className="vuln-summary">
-                        <span className={`vuln-badge ${analysisResult.compliance.passed ? 'low' : 'critical'}`}>
-                          {analysisResult.compliance.passed ? '✓ Compliant' : '✗ Non-Compliant'}
-                        </span>
-                        <span className="vuln-badge info">
-                          {analysisResult.compliance.policies_checked} Policies Checked
-                        </span>
-                      </div>
-
-                      {analysisResult.compliance.violations && analysisResult.compliance.violations.length > 0 && (
-                        <div className="vuln-list">
-                          <h4 style={{marginBottom: '0.5rem', fontSize: '0.9rem'}}>Policy Violations</h4>
-                          {analysisResult.compliance.violations.map((v: any, i: number) => (
-                            <div key={i} className={`vuln-item ${v.severity.toLowerCase()}`}>
-                              <div className="vuln-item-header">
-                                <div className="vuln-item-title">{v.policy_name.replace(/_/g, ' ')}</div>
-                                <span className={`vuln-severity-badge ${v.severity.toLowerCase()}`}>{v.severity}</span>
-                              </div>
-                              <div className="vuln-item-desc">{v.message}</div>
-                              <div className="vuln-item-location">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                  <polyline points="14 2 14 8 20 8"/>
-                                </svg>
-                                Policy Type: {v.policy_type}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {analysisResult.compliance.passed && (
-                        <div className="empty-state">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                            <polyline points="22 4 12 14.01 9 11.01" />
+                        <div className="risk-circle">
+                          <svg viewBox="0 0 100 100">
+                            <circle className="risk-bg" cx="50" cy="50" r="45" />
+                            <circle
+                              className={`risk-progress ${analysisResult.risk_score.level}`}
+                              cx="50"
+                              cy="50"
+                              r="45"
+                              style={{
+                                strokeDashoffset: 283 - (analysisResult.risk_score.score / 100) * 283
+                              }}
+                            />
                           </svg>
-                          <p>All Policies Passed</p>
-                          <span>This transaction complies with all active policies</span>
+                          <div className="risk-value">
+                            <span>{analysisResult.risk_score.score}</span>
+                            <span className="risk-label">Risk Score</span>
+                          </div>
                         </div>
+                        <div className={`risk-level ${analysisResult.risk_score.level}`}>
+                          {analysisResult.risk_score.level.toUpperCase()}
+                        </div>
+                      </div>
+
+                      {/* Compliance Results */}
+                      {analysisResult.compliance && (
+                        <>
+                          <div className="vuln-summary">
+                            <span className={`vuln-badge ${analysisResult.compliance.passed ? 'low' : 'critical'}`}>
+                              {analysisResult.compliance.passed ? '✓ Compliant' : '✗ Non-Compliant'}
+                            </span>
+                            <span className="vuln-badge info">
+                              {analysisResult.compliance.policies_checked} Policies Checked
+                            </span>
+                          </div>
+
+                          {analysisResult.compliance.violations && analysisResult.compliance.violations.length > 0 && (
+                            <div className="vuln-list">
+                              <h4 style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>Policy Violations</h4>
+                              {analysisResult.compliance.violations.map((v: any, i: number) => (
+                                <div key={i} className={`vuln-item ${v.severity.toLowerCase()}`}>
+                                  <div className="vuln-item-header">
+                                    <div className="vuln-item-title">{v.policy_name.replace(/_/g, ' ')}</div>
+                                    <span className={`vuln-severity-badge ${v.severity.toLowerCase()}`}>{v.severity}</span>
+                                  </div>
+                                  <div className="vuln-item-desc">{v.message}</div>
+                                  <div className="vuln-item-location">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                      <polyline points="14 2 14 8 20 8" />
+                                    </svg>
+                                    Policy Type: {v.policy_type}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {analysisResult.compliance.passed && (
+                            <div className="empty-state">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                              </svg>
+                              <p>All Policies Passed</p>
+                              <span>This transaction complies with all active policies</span>
+                            </div>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
                     </>
                   )}
                 </div>
@@ -633,7 +629,7 @@ export default function DashboardPage() {
                       <div className="alert-tx-row">
                         <div className="tx-hash-display">
                           <span className="tx-label">Transaction Hash:</span>
-                          <a 
+                          <a
                             href={getExplorerUrl(alert.transaction_hash)}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -641,14 +637,14 @@ export default function DashboardPage() {
                           >
                             {alert.transaction_hash.slice(0, 8)}...{alert.transaction_hash.slice(-8)}
                           </a>
-                          <button 
+                          <button
                             className="copy-btn"
                             onClick={() => copyToClipboard(alert.transaction_hash)}
                             title="Copy transaction hash"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                             </svg>
                           </button>
                         </div>
@@ -657,13 +653,13 @@ export default function DashboardPage() {
                           <code className="address-code">{alert.sender.slice(0, 6)}...{alert.sender.slice(-4)}</code>
                         </div>
                       </div>
-                      <button 
+                      <button
                         className="view-details-btn"
-                        onClick={() => setViewModal({open: true, type: 'alert', data: alert})}
+                        onClick={() => setViewModal({ open: true, type: 'alert', data: alert })}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
                         </svg>
                         View Details
                       </button>
@@ -696,12 +692,12 @@ export default function DashboardPage() {
                         <div className={`tx-status-badge ${tx.success ? 'success' : 'failed'}`}>
                           {tx.success ? (
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <polyline points="20 6 9 17 4 12"/>
+                              <polyline points="20 6 9 17 4 12" />
                             </svg>
                           ) : (
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <line x1="18" y1="6" x2="6" y2="18"/>
-                              <line x1="6" y1="6" x2="18" y2="18"/>
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
                           )}
                         </div>
@@ -709,7 +705,7 @@ export default function DashboardPage() {
                       <div className="tx-details">
                         <div className="tx-hash-row">
                           <span className="tx-label">Txn Hash:</span>
-                          <a 
+                          <a
                             href={getExplorerUrl(tx.transaction_hash)}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -717,14 +713,14 @@ export default function DashboardPage() {
                           >
                             {tx.transaction_hash.slice(0, 10)}...{tx.transaction_hash.slice(-8)}
                           </a>
-                          <button 
+                          <button
                             className="copy-btn-small"
                             onClick={() => copyToClipboard(tx.transaction_hash)}
                             title="Copy transaction hash"
                           >
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                             </svg>
                           </button>
                         </div>
@@ -735,7 +731,7 @@ export default function DashboardPage() {
                           <span className={`tx-status-text ${tx.success ? 'success' : 'failed'}`}>
                             {tx.success ? 'Success' : 'Failed'}
                           </span>
-                          <button 
+                          <button
                             className="view-details-btn-inline"
                             onClick={() => {
                               setTransactionHash(tx.transaction_hash);
@@ -745,9 +741,9 @@ export default function DashboardPage() {
                           >
                             Analyze
                           </button>
-                          <button 
+                          <button
                             className="view-details-btn-inline"
-                            onClick={() => setViewModal({open: true, type: 'transaction', data: tx})}
+                            onClick={() => setViewModal({ open: true, type: 'transaction', data: tx })}
                           >
                             View
                           </button>
@@ -853,11 +849,11 @@ export default function DashboardPage() {
 
       {/* View Details Modal */}
       {viewModal.open && viewModal.data && (
-        <div className="modal open" onClick={() => setViewModal({open: false, type: null, data: null})}>
+        <div className="modal open" onClick={() => setViewModal({ open: false, type: null, data: null })}>
           <div className="modal-content view-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{viewModal.type === 'transaction' ? 'Transaction Details' : 'Alert Details'}</h2>
-              <button className="modal-close" onClick={() => setViewModal({open: false, type: null, data: null})}>
+              <button className="modal-close" onClick={() => setViewModal({ open: false, type: null, data: null })}>
                 &times;
               </button>
             </div>
@@ -870,20 +866,20 @@ export default function DashboardPage() {
                       <code className="detail-hash">{viewModal.data.transaction_hash || viewModal.data.hash}</code>
                       <button className="copy-btn-small" onClick={() => copyToClipboard(viewModal.data.transaction_hash || viewModal.data.hash)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                         </svg>
                       </button>
-                      <a 
-                        href={getExplorerUrl(viewModal.data.transaction_hash || viewModal.data.hash)} 
-                        target="_blank" 
+                      <a
+                        href={getExplorerUrl(viewModal.data.transaction_hash || viewModal.data.hash)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="explorer-link-btn"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                          <polyline points="15 3 21 3 21 9"/>
-                          <line x1="10" y1="14" x2="21" y2="3"/>
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
                         </svg>
                         View in Explorer
                       </a>
@@ -906,8 +902,8 @@ export default function DashboardPage() {
                         <code className="detail-address">{viewModal.data.sender}</code>
                         <button className="copy-btn-small" onClick={() => copyToClipboard(viewModal.data.sender)}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                           </svg>
                         </button>
                       </div>
@@ -953,20 +949,20 @@ export default function DashboardPage() {
                       <code className="detail-hash">{viewModal.data.transaction_hash}</code>
                       <button className="copy-btn-small" onClick={() => copyToClipboard(viewModal.data.transaction_hash)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                         </svg>
                       </button>
-                      <a 
-                        href={getExplorerUrl(viewModal.data.transaction_hash)} 
-                        target="_blank" 
+                      <a
+                        href={getExplorerUrl(viewModal.data.transaction_hash)}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="explorer-link-btn"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                          <polyline points="15 3 21 3 21 9"/>
-                          <line x1="10" y1="14" x2="21" y2="3"/>
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
                         </svg>
                         View in Explorer
                       </a>
@@ -978,8 +974,8 @@ export default function DashboardPage() {
                       <code className="detail-address">{viewModal.data.sender}</code>
                       <button className="copy-btn-small" onClick={() => copyToClipboard(viewModal.data.sender)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                         </svg>
                       </button>
                     </div>
@@ -1003,11 +999,11 @@ export default function DashboardPage() {
 
       {/* Demo Modal */}
       {demoModal.open && demoModal.data && (
-        <div className="modal open" onClick={() => setDemoModal({open: false, data: null})}>
+        <div className="modal open" onClick={() => setDemoModal({ open: false, data: null })}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Analysis: {demoModal.data.contract_name.replace(/_/g, ' ').replace(/\b\w/g, (c:string) => c.toUpperCase())}</h2>
-              <button className="modal-close" onClick={() => setDemoModal({open: false, data: null})}>
+              <h2>Analysis: {demoModal.data.contract_name.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}</h2>
+              <button className="modal-close" onClick={() => setDemoModal({ open: false, data: null })}>
                 &times;
               </button>
             </div>
@@ -1022,7 +1018,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="vuln-summary" style={{marginBottom: '1rem'}}>
+              <div className="vuln-summary" style={{ marginBottom: '1rem' }}>
                 <span className="vuln-badge critical">
                   {demoModal.data.vulnerabilities.critical_count} Critical
                 </span>
@@ -1037,7 +1033,7 @@ export default function DashboardPage() {
                 </span>
               </div>
 
-              <h3 style={{marginBottom: '1rem', fontSize: '1rem'}}>Vulnerabilities Detected</h3>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Vulnerabilities Detected</h3>
               <div className="modal-vuln-list">
                 {demoModal.data.vulnerabilities.vulnerabilities.map((v: any, i: number) => (
                   <div key={i} className={`modal-vuln-item ${v.severity}`}>

@@ -43,7 +43,7 @@ export function Navbar() {
               <path d="M9 12l2 2 4-4" />
             </svg>
           </div>
-          <span className="logo-text">Aptos Shield</span>
+          <span className="logo-text">Chain Sentinel.AI</span>
         </Link>
 
         <div className="navbar-links">

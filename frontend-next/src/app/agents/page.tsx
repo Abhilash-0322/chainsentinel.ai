@@ -5,9 +5,7 @@ import { Navbar } from '@/components/ui/Navbar';
 import Link from 'next/link';
 import './agents.css';
 
-const API_BASE = typeof window !== 'undefined'
-  ? (window.location.port === '3000' ? 'http://localhost:8000' : (process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com'))
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com';
 
 interface Agent {
   id: string;
@@ -255,7 +253,7 @@ export default function AgentsPage() {
   return (
     <div className="agents-page">
       <Navbar />
-      
+
       {/* Animated background */}
       <div className="agents-bg">
         <div className="agents-bg-gradient"></div>
@@ -278,10 +276,10 @@ export default function AgentsPage() {
             <span className="title-gradient">AI Security Agents</span>
           </h1>
           <p className="agents-subtitle">
-            6 specialized AI agents for comprehensive smart contract security analysis, 
+            6 specialized AI agents for comprehensive smart contract security analysis,
             compliance verification, and optimization recommendations.
           </p>
-          
+
           {/* Model Selector */}
           <div className="model-selector">
             <span className="model-label">AI Model:</span>
@@ -302,7 +300,7 @@ export default function AgentsPage() {
 
           {/* Quick Actions */}
           <div className="quick-actions">
-            <button 
+            <button
               className={`action-btn ${multiAnalysisMode ? 'active' : ''}`}
               onClick={() => {
                 setMultiAnalysisMode(!multiAnalysisMode);
@@ -315,7 +313,7 @@ export default function AgentsPage() {
               <span className="action-icon">🔬</span>
               <span>Multi-Agent Analysis</span>
             </button>
-            <button 
+            <button
               className="action-btn"
               onClick={() => setShowCodeInput(!showCodeInput)}
             >
@@ -367,7 +365,7 @@ module example::token {
               <h2>🔬 Multi-Agent Comprehensive Analysis</h2>
               <p>Analyze your contract with all 6 specialized AI agents simultaneously</p>
             </div>
-            
+
             {!codeContext && (
               <div className="no-code-warning">
                 <span className="warning-icon">⚠️</span>
@@ -375,7 +373,7 @@ module example::token {
               </div>
             )}
 
-            <button 
+            <button
               className="run-analysis-btn"
               onClick={runMultiAgentAnalysis}
               disabled={!codeContext || isAnalyzing}
@@ -406,8 +404,8 @@ module example::token {
                     {Object.entries(multiAnalysisResults.results || {}).map(([agentId, result]: [string, any]) => {
                       const agent = agents.find(a => a.id === agentId);
                       return (
-                        <div 
-                          key={agentId} 
+                        <div
+                          key={agentId}
                           className="result-card"
                           style={{ '--agent-color': agent?.color || '#3b82f6' } as React.CSSProperties}
                         >
@@ -416,7 +414,7 @@ module example::token {
                             <span className="result-agent">{agent?.name || agentId}</span>
                             {result.success && <span className="success-badge">✓</span>}
                           </div>
-                          <div 
+                          <div
                             className="result-content"
                             dangerouslySetInnerHTML={{ __html: formatMessage(result.message || 'No response') }}
                           />
@@ -446,7 +444,7 @@ module example::token {
                     <div
                       key={agent.id}
                       className="agent-card"
-                      style={{ 
+                      style={{
                         '--agent-color': agent.color,
                         '--animation-delay': `${index * 0.1}s`
                       } as React.CSSProperties}
@@ -495,8 +493,8 @@ module example::token {
 
                 <div className="chat-messages" ref={chatContainerRef}>
                   {chatSession?.messages.map((msg) => (
-                    <div 
-                      key={msg.id} 
+                    <div
+                      key={msg.id}
                       className={`message ${msg.role} ${msg.isTyping ? 'typing' : ''}`}
                     >
                       {msg.role === 'assistant' && (
@@ -540,7 +538,7 @@ module example::token {
                       rows={1}
                       disabled={isSending}
                     />
-                    <button 
+                    <button
                       className="send-btn"
                       onClick={sendMessage}
                       disabled={!inputMessage.trim() || isSending}

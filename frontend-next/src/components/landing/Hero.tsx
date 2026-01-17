@@ -24,8 +24,8 @@ export function Hero() {
 
                 {/* Title */}
                 <h1 className="hero-title">
-                    <span>Protect Your</span>
-                    <span className="gradient-text">Smart Contracts</span>
+                    <span>Protect Your </span>
+                    <span className="gradient-text">Smart Contracts </span>
                     <span>in Real-time</span>
                 </h1>
 

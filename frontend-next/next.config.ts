@@ -1,7 +1,39 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Enable React strict mode for better development experience
+  reactStrictMode: true,
+
+  // Environment variables available at build time
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'wss://chainsentinel-ai.onrender.com/ws',
+  },
+
+  // Handle CORS by rewriting requests in production
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://chainsentinel-ai.onrender.com/api/:path*',
+      },
+    ];
+  },
+
+  // Headers for WebSocket upgrade support
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

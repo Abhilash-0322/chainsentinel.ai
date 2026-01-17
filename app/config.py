@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, env="PORT")
     debug: bool = Field(default=True)
     cors_origins: str = Field(
-        default="http://localhost:3000,https://chainsentinel-fohdkm7jx-abhilash-maruyas-projects.vercel.app,https://chainsentinel.vercel.app,https://chainsentinel-ai.onrender.com",
+        default="http://localhost:3000,https://chainsentinel-fohdkm7jx-abhilash-maruyas-projects.vercel.app,https://chainsentinel.vercel.app,https://chainsentinel-ai.onrender.com,https://chainsentinel-hmyhpawyo-abhilash-maruyas-projects.vercel.app",
         description="Allowed CORS origins (comma-separated)"
     )
     

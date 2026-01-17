@@ -4,9 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Navbar } from '@/components/ui/Navbar';
 import './trading.css';
 
-const API_BASE = typeof window !== 'undefined'
-  ? (window.location.port === '3000' ? 'http://localhost:8000' : (process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com'))
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://chainsentinel-ai.onrender.com';
 
 interface TokenPrice {
   symbol: string;
@@ -76,7 +74,7 @@ export default function TradingPage() {
       if (res.ok) {
         const data = await res.json();
         setMarketData(data);
-        
+
         // Update selected token data
         const token = data.tokens.find((t: TokenPrice) => t.symbol === selectedToken);
         if (token) {
@@ -108,26 +106,26 @@ export default function TradingPage() {
   const generateOrderBook = useCallback((price: number) => {
     const bids: OrderBookEntry[] = [];
     const asks: OrderBookEntry[] = [];
-    
+
     for (let i = 0; i < 15; i++) {
       const bidPrice = price * (1 - (i + 1) * 0.001);
       const askPrice = price * (1 + (i + 1) * 0.001);
       const bidAmount = Math.random() * 100 + 10;
       const askAmount = Math.random() * 100 + 10;
-      
+
       bids.push({
         price: bidPrice,
         amount: bidAmount,
         total: bids.reduce((sum, b) => sum + b.amount, 0) + bidAmount
       });
-      
+
       asks.push({
         price: askPrice,
         amount: askAmount,
         total: asks.reduce((sum, a) => sum + a.amount, 0) + askAmount
       });
     }
-    
+
     setOrderBook({ bids, asks: asks.reverse() });
   }, []);
 
@@ -135,7 +133,7 @@ export default function TradingPage() {
   const generateRecentTrades = useCallback((price: number) => {
     const trades: Trade[] = [];
     const now = Date.now();
-    
+
     for (let i = 0; i < 20; i++) {
       trades.push({
         id: `trade-${i}`,
@@ -145,7 +143,7 @@ export default function TradingPage() {
         time: new Date(now - i * 30000).toLocaleTimeString()
       });
     }
-    
+
     setRecentTrades(trades);
   }, []);
 
@@ -249,8 +247,8 @@ export default function TradingPage() {
   };
 
   const toggleWatchlist = (symbol: string) => {
-    setWatchlist(prev => 
-      prev.includes(symbol) 
+    setWatchlist(prev =>
+      prev.includes(symbol)
         ? prev.filter(s => s !== symbol)
         : [...prev, symbol]
     );
@@ -259,7 +257,7 @@ export default function TradingPage() {
   return (
     <div className="trading-page">
       <Navbar />
-      
+
       {/* Market Overview Bar */}
       <div className="market-bar">
         <div className="market-bar-content">
@@ -279,8 +277,8 @@ export default function TradingPage() {
           </div>
           <div className="market-ticker">
             {marketData?.tokens.slice(0, 8).map(token => (
-              <div 
-                key={token.symbol} 
+              <div
+                key={token.symbol}
                 className={`ticker-item ${token.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}`}
                 onClick={() => handleTokenSelect(token.symbol)}
               >
@@ -309,7 +307,7 @@ export default function TradingPage() {
               {marketData?.tokens
                 .filter(t => watchlist.includes(t.symbol))
                 .map(token => (
-                  <div 
+                  <div
                     key={token.symbol}
                     className={`watchlist-item ${selectedToken === token.symbol ? 'active' : ''}`}
                     onClick={() => handleTokenSelect(token.symbol)}
@@ -321,7 +319,7 @@ export default function TradingPage() {
                     <div className="token-price-info">
                       <span className="token-price">${formatPrice(token.price)}</span>
                       <span className={`token-change ${token.price_change_percentage_24h >= 0 ? 'positive' : 'negative'}`}>
-                        {token.price_change_percentage_24h >= 0 ? '▲' : '▼'} 
+                        {token.price_change_percentage_24h >= 0 ? '▲' : '▼'}
                         {Math.abs(token.price_change_percentage_24h).toFixed(2)}%
                       </span>
                     </div>
@@ -329,14 +327,14 @@ export default function TradingPage() {
                 ))}
             </div>
           </div>
-          
+
           <div className="sidebar-section">
             <div className="sidebar-header">
               <h3>🔥 Markets</h3>
             </div>
             <div className="markets-list">
               {marketData?.tokens.map(token => (
-                <div 
+                <div
                   key={token.symbol}
                   className={`market-item ${selectedToken === token.symbol ? 'active' : ''}`}
                   onClick={() => handleTokenSelect(token.symbol)}
@@ -352,7 +350,7 @@ export default function TradingPage() {
                       {token.price_change_percentage_24h.toFixed(2)}%
                     </span>
                   </div>
-                  <button 
+                  <button
                     className={`star-btn ${watchlist.includes(token.symbol) ? 'active' : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -382,7 +380,7 @@ export default function TradingPage() {
                   {selectedTokenData ? (
                     <>
                       {selectedTokenData.price_change_percentage_24h >= 0 ? '+' : ''}
-                      ${selectedTokenData.price_change_24h.toFixed(2)} 
+                      ${selectedTokenData.price_change_24h.toFixed(2)}
                       ({selectedTokenData.price_change_percentage_24h.toFixed(2)}%)
                     </>
                   ) : '--'}
@@ -411,25 +409,25 @@ export default function TradingPage() {
 
           {/* Mobile Tab Selector */}
           <div className="mobile-tabs">
-            <button 
+            <button
               className={showMobileMenu === 'chart' ? 'active' : ''}
               onClick={() => setShowMobileMenu('chart')}
             >
               Chart
             </button>
-            <button 
+            <button
               className={showMobileMenu === 'orderbook' ? 'active' : ''}
               onClick={() => setShowMobileMenu('orderbook')}
             >
               Order Book
             </button>
-            <button 
+            <button
               className={showMobileMenu === 'trades' ? 'active' : ''}
               onClick={() => setShowMobileMenu('trades')}
             >
               Trades
             </button>
-            <button 
+            <button
               className={showMobileMenu === 'order' ? 'active' : ''}
               onClick={() => setShowMobileMenu('order')}
             >
@@ -534,13 +532,13 @@ export default function TradingPage() {
         {/* Right Sidebar - Order Form */}
         <div className={`order-panel ${showMobileMenu === 'order' ? 'mobile-visible' : ''}`}>
           <div className="order-tabs">
-            <button 
+            <button
               className={`order-tab ${orderSide === 'buy' ? 'active buy' : ''}`}
               onClick={() => setOrderSide('buy')}
             >
               Buy
             </button>
-            <button 
+            <button
               className={`order-tab ${orderSide === 'sell' ? 'active sell' : ''}`}
               onClick={() => setOrderSide('sell')}
             >
@@ -549,13 +547,13 @@ export default function TradingPage() {
           </div>
 
           <div className="order-type-selector">
-            <button 
+            <button
               className={`type-btn ${orderType === 'limit' ? 'active' : ''}`}
               onClick={() => setOrderType('limit')}
             >
               Limit
             </button>
-            <button 
+            <button
               className={`type-btn ${orderType === 'market' ? 'active' : ''}`}
               onClick={() => setOrderType('market')}
             >
@@ -604,7 +602,7 @@ export default function TradingPage() {
               <div className="summary-row">
                 <span>Total</span>
                 <span>
-                  {orderAmount && orderPrice 
+                  {orderAmount && orderPrice
                     ? `${(parseFloat(orderAmount) * parseFloat(orderPrice)).toFixed(2)} USDT`
                     : '-- USDT'
                   }
@@ -613,7 +611,7 @@ export default function TradingPage() {
               <div className="summary-row">
                 <span>Fee (0.1%)</span>
                 <span>
-                  {orderAmount && orderPrice 
+                  {orderAmount && orderPrice
                     ? `${(parseFloat(orderAmount) * parseFloat(orderPrice) * 0.001).toFixed(4)} USDT`
                     : '-- USDT'
                   }
@@ -621,7 +619,7 @@ export default function TradingPage() {
               </div>
             </div>
 
-            <button 
+            <button
               className={`place-order-btn ${orderSide}`}
               onClick={handlePlaceOrder}
               disabled={!orderAmount || (orderType === 'limit' && !orderPrice)}
