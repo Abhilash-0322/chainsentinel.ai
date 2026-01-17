@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, env="PORT")
     debug: bool = Field(default=True)
     cors_origins: str = Field(
-        default="http://localhost:3000,https://aptoscomply.vercel.app,https://frontend-next-f5m770qb5-abhilash-maruyas-projects.vercel.app,https://chainsentinel-ai.onrender.com",
+        default="http://localhost:3000,https://aptoscomply.vercel.app,https://frontend-next-7tqs6oq4v-abhilash-maruyas-projects.vercel.app,https://frontend-next-wine-two.vercel.app,https://chainsentinel-ai.onrender.com",
         description="Allowed CORS origins (comma-separated)"
     )
     
