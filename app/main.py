@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 import os
 
 from app.config import get_settings
@@ -95,63 +94,16 @@ async def health_check():
     )
 
 
-# Serve frontend
-frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
-
-
-@app.get("/", tags=["Frontend"])
-async def serve_landing():
-    """Serve the animated landing page."""
-    landing_path = os.path.join(frontend_dir, "landing.html")
-    if os.path.exists(landing_path):
-        return FileResponse(landing_path)
-    # Fallback to dashboard
-    return FileResponse(os.path.join(frontend_dir, "index.html"))
-
-
-@app.get("/index.html", tags=["Frontend"])
-async def serve_dashboard():
-    """Serve the frontend dashboard."""
-    index_path = os.path.join(frontend_dir, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"message": "Frontend not found. API is available at /docs"}
-
-
-@app.get("/styles.css", tags=["Frontend"])
-async def serve_css():
-    """Serve CSS file."""
-    css_path = os.path.join(frontend_dir, "styles.css")
-    if os.path.exists(css_path):
-        return FileResponse(css_path, media_type="text/css")
-    return {"error": "CSS not found"}
-
-
-@app.get("/app.js", tags=["Frontend"])
-async def serve_js():
-    """Serve JavaScript file."""
-    js_path = os.path.join(frontend_dir, "app.js")
-    if os.path.exists(js_path):
-        return FileResponse(js_path, media_type="application/javascript")
-    return {"error": "JavaScript not found"}
-
-
-@app.get("/landing.css", tags=["Frontend"])
-async def serve_landing_css():
-    """Serve landing page CSS."""
-    css_path = os.path.join(frontend_dir, "landing.css")
-    if os.path.exists(css_path):
-        return FileResponse(css_path, media_type="text/css")
-    return {"error": "Landing CSS not found"}
-
-
-@app.get("/landing.js", tags=["Frontend"])
-async def serve_landing_js():
-    """Serve landing page JS."""
-    js_path = os.path.join(frontend_dir, "landing.js")
-    if os.path.exists(js_path):
-        return FileResponse(js_path, media_type="application/javascript")
-    return {"error": "Landing JS not found"}
+@app.get("/", tags=["API"])
+async def root():
+    """API root endpoint - redirects to docs."""
+    return {
+        "message": "Aptos Compliance Agent API",
+        "version": "0.1.0",
+        "docs": "/docs",
+        "health": "/api/health",
+        "frontend": "https://frontend-next-in6mi4yxe-abhilash-maruyas-projects.vercel.app"
+    }
 
 
 if __name__ == "__main__":
