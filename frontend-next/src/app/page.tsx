@@ -43,7 +43,7 @@ export default function LandingPage() {
         color: 'var(--text-muted)',
         fontSize: '0.9rem'
       }}>
-        <p>Aptos Shield - Built for Hackathon 2026</p>
+        <p>ChainSensai.ai</p>
       </footer>
     </>
   );
